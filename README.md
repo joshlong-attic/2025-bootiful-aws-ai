@@ -38,8 +38,9 @@ spring.ai.vectorstore.pgvector.initialize-schema=true
 
 ## script 
 
-- Pi day! 
-	- amazon s3 came out in this day in 2006!
+- java is hard! 
+- lets use bedrock and spring ai to build something
+- james: aws console 
 - prancer
 - dog adoption agency assistant
 - dog, repository
@@ -50,3 +51,4 @@ spring.ai.vectorstore.pgvector.initialize-schema=true
 - no data, add RAG
 - tools
 - nice, but lets centralize it with: MCP
+
