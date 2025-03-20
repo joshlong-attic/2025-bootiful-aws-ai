@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -31,24 +32,17 @@ public class ServiceApplication {
 }
 
 
-@Component
+@Service
 class DogAdoptionAppointmentScheduler {
-
-    private final ObjectMapper objectMapper;
-
-    DogAdoptionAppointmentScheduler(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Tool(description = "schedule an appointment to adopt a dog" +
             " at the Pooch Palace dog adoption agency")
     String scheduleDogAdoptionAppointment(
             @ToolParam(description = "the id of the dog") int id,
-            @ToolParam(description = "the name of the dog") String name)
-            throws Exception {
+            @ToolParam(description = "the name of the dog") String name) {
         var instant = Instant.now().plus(3, ChronoUnit.DAYS);
         System.out.println("confirming the appointment: " +
                 instant + " for dog " + id + " named " + name);
-        return objectMapper.writeValueAsString(instant);
+        return instant.toString();
     }
 }
