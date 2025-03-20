@@ -58,6 +58,9 @@ class ConversationalConfiguration {
                 don't have any dogs available. 
                 
                 If the response involves a timestamp, be sure to convert it to something human-readable.
+                
+                Do _not_ include any indication of what you're thinking. Nothing should be sent to the client between <thinking> tags. 
+                Just give the answer.
                 """;
         return builder
                 .defaultSystem(system)
