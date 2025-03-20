@@ -36,13 +36,11 @@ public class AdoptionsApplication {
 @Configuration
 class ConversationalConfiguration {
 
-    @Value("${adoption-service.url:http://localhost:8081}")
-    private String adoptionServiceUrl;
 
     @Bean
-    McpSyncClient mcpClient() {
+    McpSyncClient mcpClient(@Value("${adoption-service.url:http://localhost:8081}") String url) {
         var mcpClient = McpClient
-                .sync(new HttpClientSseClientTransport(adoptionServiceUrl))
+                .sync(new HttpClientSseClientTransport(url))
                 .build();
         mcpClient.initialize();
         return mcpClient;
@@ -50,7 +48,6 @@ class ConversationalConfiguration {
 
     @Bean
     ChatClient chatClient(
-            DogRepository repository,
             McpSyncClient mcpSyncClient,
             ChatClient.Builder builder) {
 
