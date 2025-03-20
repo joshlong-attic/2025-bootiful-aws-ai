@@ -23,6 +23,7 @@ import java.util.Map;
 public class TestAdoptionsApplication {
 
     public static void main(String[] args) {
+        System.setProperty("spring.sql.init.mode", "always");
         SpringApplication.run(AdoptionsApplication.class, args);
     }
 }
