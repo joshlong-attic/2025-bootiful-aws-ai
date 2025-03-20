@@ -25,7 +25,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * @author James Ward
+ * @author Josh Long
+ */
 @SpringBootApplication
 public class AdoptionsApplication {
     public static void main(String[] args) {
