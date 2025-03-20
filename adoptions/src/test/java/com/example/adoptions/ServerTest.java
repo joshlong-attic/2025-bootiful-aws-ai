@@ -13,11 +13,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ServerTest {
+
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Test
     void getDog() {
+
+    }
+
+    @Test
+    void adoptDog() {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -28,19 +34,14 @@ public class ServerTest {
 
         var resp = restTemplate.postForEntity("/1/inquire", request, String.class);
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
-    }
 
-    @Test
-    void adoptDog() {
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        var map = new LinkedMultiValueMap<String, String>();
+        map.clear();
         map.add("question", "fantastic. when could i schedule an appointment to adopt Prancer, from the London location?");
 
-        var request = new HttpEntity<>(map, headers);
+        request = new HttpEntity<>(map, headers);
 
-        var resp = restTemplate.postForEntity("/1/inquire", request, String.class);
+        resp = restTemplate.postForEntity("/1/inquire", request, String.class);
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
     }
 
