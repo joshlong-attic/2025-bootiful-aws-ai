@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+import java.util.Map;
 
 public class TestAdoptionsApplication {
 
@@ -39,57 +40,49 @@ class TestContainersConfiguration {
         return new PostgreSQLContainer<>(image);
     }
 
-    static class SchedulingContainer extends GenericContainer<SchedulingContainer> {
-        SchedulingContainer() {
-            super(DockerImageName.parse("scheduling"));
-            addExposedPort(8081);
-            setWaitStrategy(Wait.forHttp("/sse"));
-            setLogConsumers(List.of(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass()))));
-        }
+    @Bean
+    @RestartScope
+    GenericContainer<?> adoptionService() {
+        return new GenericContainer<>(DockerImageName.parse("scheduling"))
+                .withExposedPorts(8081)
+                .waitingFor(Wait.forHttp("/sse"))
+                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass())));
     }
 
     @Bean
-    SchedulingContainer adoptionService() {
-        return new SchedulingContainer();
-    }
-
-    @Bean
-    DynamicPropertyRegistrar adoptionServiceProperties(SchedulingContainer container) {
+    DynamicPropertyRegistrar adoptionServiceProperties(GenericContainer<?> adoptionService) {
         return (properties) ->
-                properties.add("adoption-service.url", () -> "http://localhost:" + container.getFirstMappedPort());
+                properties.add("adoption-service.url", () -> "http://localhost:" + adoptionService.getFirstMappedPort());
     }
 }
 
 @Configuration
-class DataInitializer {
+class DogDataInitializerConfiguration {
 
-    @RestartScope
     @Bean
-    ApplicationRunner initializerRunner(VectorStore vectorStore, DogRepository dogRepository) {
+    ApplicationRunner initializerRunner(VectorStore vectorStore,
+                                        DogRepository dogRepository) {
         return args -> {
-            // Not great. I want to init the vectorStore with data, but with auto-restart and the Postgres Container RestartScope, we only want to do it once, not on every reload
-            if (System.getProperty("INIT") == null) {
-                System.setProperty("INIT", "true");
-                // we do this here instead of in the schema.sql because when multiple test classes run, the schema.sql gets run each time, resulting in duplicates
-                dogRepository.saveAll(
-                        List.of(
-                                // note: 0 seems to be the magic number to cause an insert and get the DB sequence to assign an id
-                                new Dog(0, "Jasper", null, "A grey Shih Tzu known for being protective."),
-                                new Dog(0, "Toby", null, "A grey Doberman known for being playful."),
-                                new Dog(0, "Nala", null, "A spotted German Shepherd known for being loyal."),
-                                new Dog(0, "Penny", null, "A white Great Dane known for being protective."),
-                                new Dog(0, "Bella", null, "A golden Poodle known for being calm."),
-                                new Dog(0, "Willow", null, "A brindle Great Dane known for being calm."),
-                                new Dog(0, "Daisy", null, "A spotted Poodle known for being affectionate."),
-                                new Dog(0, "Mia", null, "A grey Great Dane known for being loyal."),
-                                new Dog(0, "Molly", null, "A golden Chihuahua known for being curious."),
-                                new Dog(0, "Ruby", null, "A white Great Dane known for being protective."),
-                                new Dog(0, "Prancer", null, "A demonic, neurotic, man hating, animal hating, children hating dogs that look like gremlins.")
-                        ));
-
-                var doguments = dogRepository.findAll().stream().map(dog -> new Document("id: %s, name: %s, description: %s".formatted(dog.id(), dog.name(), dog.description())))
-                        .toList();
-                vectorStore.add(doguments);
+            if (dogRepository.count() == 0) {
+                System.out.println("initializing vector store");
+                var map = Map.of(
+                        "Jasper", "A grey Shih Tzu known for being protective.",
+                        "Toby", "A grey Doberman known for being playful.",
+                        "Nala", "A spotted German Shepherd known for being loyal.",
+                        "Penny", "A white Great Dane known for being protective.",
+                        "Bella", "A golden Poodle known for being calm.",
+                        "Willow", "A brindle Great Dane known for being calm.",
+                        "Daisy", "A spotted Poodle known for being affectionate.",
+                        "Mia", "A grey Great Dane known for being loyal.",
+                        "Molly", "A golden Chihuahua known for being curious.",
+                        "Prancer", "A demonic, neurotic, man hating, animal hating, children hating dogs that look like gremlins."
+                );
+                map.forEach((name, description) -> {
+                    var dog = dogRepository.save(new Dog(0, name, null, description));
+                    var dogument = new Document("id: %s, name: %s, description: %s".formatted(dog.id(), dog.name(), dog.description()));
+                    vectorStore.add(List.of(dogument));
+                });
+                System.out.println("finished initializing vector store");
             }
 
         };

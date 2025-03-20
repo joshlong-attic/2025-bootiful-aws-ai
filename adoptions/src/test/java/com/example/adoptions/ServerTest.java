@@ -17,7 +17,7 @@ public class ServerTest {
     private TestRestTemplate restTemplate;
 
     @Test
-    public void getDog() {
+    void getDog() {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -31,7 +31,7 @@ public class ServerTest {
     }
 
     @Test
-    public void adoptDog() {
+    void adoptDog() {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
