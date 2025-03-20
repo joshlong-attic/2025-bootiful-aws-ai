@@ -4,45 +4,50 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ServerTest {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Test
-    void getDog() {
-
-    }
+    @LocalServerPort
+    private int port;
 
     @Test
     void adoptDog() {
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        var map = new LinkedMultiValueMap<String, String>();
-        map.add("question", "Do you have any neurotic dogs?");
+        var prancer = inquire("Do you have any neurotic dogs?");
+        assertThat(prancer.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(prancer.getBody()).contains("Prancer");
 
-        var request = new HttpEntity<>(map, headers);
+        var schedule = inquire("fantastic. when could i schedule an appointment to adopt Prancer, from the London location?");
+        assertThat(schedule.getStatusCode().is2xxSuccessful()).isTrue();
+        var threeDays = Instant.now().plus(Duration.ofDays(3));
+        var futureDate = threeDays.atZone(ZoneId.systemDefault()).toLocalDate();
+        var threeDaysNumber = futureDate.getDayOfMonth();
+        assertThat(schedule.getBody()).contains(threeDaysNumber + "");
+        System.out.println(schedule.getBody());
 
-        var resp = restTemplate.postForEntity("/1/inquire", request, String.class);
-        assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
+    }
 
-
-        map.clear();
-        map.add("question", "fantastic. when could i schedule an appointment to adopt Prancer, from the London location?");
-
-        request = new HttpEntity<>(map, headers);
-
-        resp = restTemplate.postForEntity("/1/inquire", request, String.class);
-        assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
+    private ResponseEntity<String> inquire(String question) {
+        var uri = "http://localhost:" + this.port + "/jwjl/inquire";
+        var rc = RestClient
+                .builder()
+                .baseUrl(uri)
+                .build();
+        return rc
+                .post()
+                .uri(builder -> builder.queryParam("question", question).build())
+                .retrieve()
+                .toEntity(String.class);
     }
 
 }

@@ -36,7 +36,6 @@ public class AdoptionsApplication {
 @Configuration
 class ConversationalConfiguration {
 
-
     @Bean
     McpSyncClient mcpClient(@Value("${adoption-service.url:http://localhost:8081}") String url) {
         var mcpClient = McpClient
@@ -56,7 +55,9 @@ class ConversationalConfiguration {
                 agency named Pooch Palace with locations in Atlanta, Antwerp, Seoul, Tokyo, Singapore, Paris,\s
                 Mumbai, New Delhi, Barcelona, San Francisco, and London. Information about the dogs available\s
                 will be presented below. If there is no information, then return a polite response suggesting we\s
-                don't have any dogs available.
+                don't have any dogs available. 
+                
+                If the response involves a timestamp, be sure to convert it to something human-readable.
                 """;
         return builder
                 .defaultSystem(system)
@@ -79,7 +80,7 @@ class ConversationalController {
 
     private final ChatClient chatClient;
     private final QuestionAnswerAdvisor questionAnswerAdvisor;
-    private final Map<Long, PromptChatMemoryAdvisor> chatMemory = new ConcurrentHashMap<>();
+    private final Map<String, PromptChatMemoryAdvisor> chatMemory = new ConcurrentHashMap<>();
 
     ConversationalController(VectorStore vectorStore, ChatClient chatClient) {
         this.chatClient = chatClient;
@@ -87,7 +88,7 @@ class ConversationalController {
     }
 
     @PostMapping("/{id}/inquire")
-    String inquire(@PathVariable Long id, @RequestParam String question) {
+    String inquire(@PathVariable String id, @RequestParam String question) {
         var promptChatMemoryAdvisor = chatMemory
                 .computeIfAbsent(id, _ -> PromptChatMemoryAdvisor.builder(new InMemoryChatMemory()).build());
         return chatClient
