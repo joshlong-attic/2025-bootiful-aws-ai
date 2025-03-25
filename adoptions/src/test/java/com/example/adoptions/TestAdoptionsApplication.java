@@ -43,7 +43,7 @@ class TestContainersConfiguration {
 
     @Bean
     @RestartScope
-    GenericContainer<?> adoptionService() {
+    GenericContainer<?> schedulingService() {
         return new GenericContainer<>(DockerImageName.parse("scheduling"))
                 .withExposedPorts(8081)
                 .waitingFor(Wait.forHttp("/sse"))
@@ -51,9 +51,9 @@ class TestContainersConfiguration {
     }
 
     @Bean
-    DynamicPropertyRegistrar adoptionServiceProperties(GenericContainer<?> adoptionService) {
+    DynamicPropertyRegistrar adoptionServiceProperties(GenericContainer<?> schedulingService) {
         return (properties) ->
-                properties.add("adoption-service.url", () -> "http://localhost:" + adoptionService.getFirstMappedPort());
+                properties.add("scheduling-service.url", () -> "http://localhost:" + schedulingService.getFirstMappedPort());
     }
 }
 

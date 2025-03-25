@@ -40,7 +40,7 @@ public class AdoptionsApplication {
 class ConversationalConfiguration {
 
     @Bean
-    McpSyncClient mcpClient(@Value("${adoption-service.url:http://localhost:8081}") String url) {
+    McpSyncClient mcpClient(@Value("${scheduling-service.url:http://localhost:8081}") String url) {
         var mcpClient = McpClient
                 .sync(new HttpClientSseClientTransport(url))
                 .build();
@@ -58,7 +58,7 @@ class ConversationalConfiguration {
                 agency named Pooch Palace with locations in Atlanta, Antwerp, Seoul, Tokyo, Singapore, Paris,\s
                 Mumbai, New Delhi, Barcelona, San Francisco, and London. Information about the dogs available\s
                 will be presented below. If there is no information, then return a polite response suggesting we\s
-                don't have any dogs available. 
+                don't have any dogs available.
                 
                 If the response involves a timestamp, be sure to convert it to something human-readable.
                 

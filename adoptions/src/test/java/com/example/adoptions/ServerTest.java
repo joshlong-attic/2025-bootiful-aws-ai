@@ -20,7 +20,6 @@ public class ServerTest {
 
     @Test
     void adoptDog() {
-
         var prancer = inquire("Do you have any neurotic dogs?");
         assertThat(prancer.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(prancer.getBody()).contains("Prancer");
