@@ -1,54 +1,22 @@
 # Bootiful AI on AWS
 
-Hi, Spring and AWS fans! in this installment industry legend James Ward and his trusty sidekick Josh look at the amazing opportunities marrying Spring AI and AWS Bedrock!
+TODO:
+- Put additive config for test schema gen in test application.properties
 
-## prompts to `/jlong/inquire`
-
-* ` http POST :8080/42/inquire question=="do you have any neurotic dogs?" `
-* ` http POST :8080/42/inquire question=="fantastic. when could i schedule an appointment to adopt Prancer, whose ID is 45, from the London location?" `
-
-## dependencies for `adoptions` 
-- `web`
-- `pgvector`
-- `bedrock-converse`
-- `bedrock`
-- `devtools`
-- `data-jdbc`
-- `mcp-client`
-
-## `service`
-
-### properties
-- `server.port=8081`
- 
-### dependencies
-- `mcp-server`
-- `web`
-
-
-## properties 
-
+In `service`
 ```
-spring.ai.bedrock.converse.chat.options.model=amazon.nova-pro-v1:0
-spring.ai.bedrock.converse.chat.enabled=true
-spring.ai.bedrock.cohere.embedding.enabled=true
-spring.ai.vectorstore.pgvector.dimensions=1024
-spring.ai.vectorstore.pgvector.initialize-schema=true 
+./mvnw spring-boot:build-image
 ```
 
-## script 
+In `adoptions`
+```
+export SPRING_AI_BEDROCK_AWS_ACCESS_KEY=YOUR_ACCESS_KEY
+export SPRING_AI_BEDROCK_AWS_SECRET_KEY=YOUR_SCREET_KEY
 
-- java is hard! 
-- lets use bedrock and spring ai to build something
-- james: aws console 
-- prancer
-- dog adoption agency assistant
-- dog, repository
-- start.spring.io 
-- chatclient 
-- no memory? add advisor to enable chat memory 
-- system prompt 
-- no data, add RAG
-- tools
-- nice, but lets centralize it with: MCP
+# Run Tests
+./mvnw test
+
+# Run Server
+./mvnw spring-boot:test-run
+```
 
