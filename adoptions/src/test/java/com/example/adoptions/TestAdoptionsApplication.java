@@ -3,6 +3,7 @@ package com.example.adoptions;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.devtools.restart.RestartScope;
@@ -43,17 +44,30 @@ class TestContainersConfiguration {
 
     @Bean
     @RestartScope
-    GenericContainer<?> schedulingService() {
-        return new GenericContainer<>(DockerImageName.parse("scheduling"))
-                .withExposedPorts(8081)
-                .waitingFor(Wait.forHttp("/sse"))
-                .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass())));
+    //@ConditionalOnProperty(value = "scheduling-service.url", matchIfMissing = true) // doesn't have an effect
+    // todo: there doesn't seem to be a way to disable this container so for now if the user wants to specify a scheduling service url,
+    //       we start a noop container and then don't use it
+    GenericContainer<?> schedulingService(@Value("${scheduling-service.url:#{null}}") String url) {
+        if (url == null) {
+            // no scheduling service property provided, so start the container
+            return new GenericContainer<>(DockerImageName.parse("scheduling"))
+                    .withExposedPorts(8081)
+                    .waitingFor(Wait.forHttp("/sse"))
+                    .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(getClass())));
+        }
+        else {
+            return new GenericContainer<>(DockerImageName.parse("screwdrivercd/noop-container"));
+        }
     }
 
     @Bean
-    DynamicPropertyRegistrar adoptionServiceProperties(GenericContainer<?> schedulingService) {
-        return (properties) ->
+//    @ConditionalOnProperty(value = "scheduling-service.url", matchIfMissing = true) // doesn't have an effect
+    DynamicPropertyRegistrar adoptionServiceProperties(GenericContainer<?> schedulingService, @Value("${scheduling-service.url:#{null}}") String url) {
+        return (properties) -> {
+            if (url == null) {
                 properties.add("scheduling-service.url", () -> "http://localhost:" + schedulingService.getFirstMappedPort());
+            }
+        };
     }
 }
 

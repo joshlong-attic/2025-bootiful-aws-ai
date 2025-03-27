@@ -40,7 +40,7 @@ public class AdoptionsApplication {
 class ConversationalConfiguration {
 
     @Bean
-    McpSyncClient mcpClient(@Value("${scheduling-service.url:http://localhost:8081}") String url) {
+    McpSyncClient mcpClient(@Value("${scheduling-service.url}") String url) {
         var mcpClient = McpClient
                 .sync(new HttpClientSseClientTransport(url))
                 .build();
